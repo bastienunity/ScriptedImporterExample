@@ -18,6 +18,8 @@ public class UnicornImporterEditor : ScriptedImporterEditor
 
     public override void OnEnable()
     {
+        // Needs to make sure base.OnEnable is called as of 2019.2
+        // it used to do nothing but it is not the case anymore.
         base.OnEnable();
 
         m_TailColorOverride = serializedObject.FindProperty("m_TailColorOverride");
@@ -27,6 +29,12 @@ public class UnicornImporterEditor : ScriptedImporterEditor
 
     public override void OnInspectorGUI()
     {
+#if UNITY_2019_2_OR_NEWER
+        // starting in 2019.2, AssetImporterEditor work the same as other Editors
+        // and needs to call update/apply on serializedObject if any changes are made to serializedProperties.
+        serializedObject.UpdateIfRequiredOrScript();
+#endif
+
         using (new EditorGUILayout.HorizontalScope())
         {
             EditorGUILayout.PropertyField(m_TailColorOverride, Style.TailColorOverride);
@@ -43,6 +51,11 @@ public class UnicornImporterEditor : ScriptedImporterEditor
             EditorGUILayout.PropertyField(prop, Style.TailColors, prop.isExpanded);
         }
 
+#if UNITY_2019_2_OR_NEWER
+        serializedObject.ApplyModifiedProperties();
+#endif
+
+        // Make sure ApplyRevertGUI is called to have the Apply/Revert mechanism working correctly.
         ApplyRevertGUI();
     }
 }
